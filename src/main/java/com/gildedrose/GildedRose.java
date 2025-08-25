@@ -1,5 +1,7 @@
 package com.gildedrose;
 
+import com.gildedrose.updater.*;
+
 class GildedRose {
     Item[] items;
 
@@ -9,83 +11,24 @@ class GildedRose {
 
     public void updateQuality() {
         for (Item item : items) {
-            if(!isSulfuras(item)) {
-
-                if (!isAgedBrie(item) && !isBackstagePass(item)) {
-                    if (item.quality > 0) {
-                        if(isConjuredManaCake(item)) {
-                            item.quality = item.quality - 2;
-                        }else{
-                            item.quality = item.quality - 1;
-                        }
-                    }
-                } else {
-                    if (item.quality < 50) {
-                        item.quality = item.quality + 1;
-                        manageBackStageQuality(item);
-                    }
-                }
-                manageExpiration(item);
-            }
-
+            ItemUpdater itemUpdater = updaterFor(item);
+            itemUpdater.update(item);
         }
     }
 
-    private void manageBackStageQuality(Item item) {
-        if (isBackstagePass(item)) {
-
-            if (item.sellIn < 11) {
-                if (item.quality < 50) {
-                    item.quality = item.quality + 1;
-                }
-            }
-
-            if (item.sellIn < 6) {
-                if (item.quality < 50) {
-                    item.quality = item.quality + 1;
-                }
-            }
+    private ItemUpdater updaterFor(Item item) {
+        if ("Aged Brie".equals(item.name)) {
+            return new AgedBrieUpdater();
         }
-    }
-
-    private void manageExpiration(Item item) {
-        item.sellIn = item.sellIn - 1;
-
-        if (item.sellIn < 0) {
-            if (!isAgedBrie(item)) {
-                if (!isBackstagePass(item)) {
-                    if (item.quality > 0) {
-                        if(isConjuredManaCake(item)) {
-                            item.quality = item.quality - 2;
-                        }else {
-                            item.quality = item.quality - 1;
-                        }
-                    }
-                } else {
-                    item.quality = 0;
-                }
-            } else {
-                if (item.quality < 50) {
-                    item.quality = item.quality + 1;
-                }
-            }
+        if ("Backstage passes to a TAFKAL80ETC concert".equals(item.name)) {
+            return new BackstagePassUpdater();
         }
+        if ("Conjured Mana Cake".equals(item.name)) {
+            return new ConjuredManaCakeUpdater();
+        }
+        if ("Sulfuras, Hand of Ragnaros".equals(item.name)) {
+            return new SulfurasUpdater();
+        }
+        return new DefaultItemUpdater();
     }
-
-    private boolean isAgedBrie(Item item) {
-        return item.name.equals("Aged Brie");
-    }
-
-    private boolean isBackstagePass(Item item) {
-        return item.name.equals("Backstage passes to a TAFKAL80ETC concert");
-    }
-
-    private boolean isSulfuras(Item item) {
-        return item.name.equals("Sulfuras, Hand of Ragnaros");
-    }
-
-    private boolean isConjuredManaCake(Item item) {
-        return item.name.equals("Conjured Mana Cake");
-    }
-
 }
